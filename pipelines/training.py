@@ -9,7 +9,7 @@ def training(
     num_train_epochs: int = 3,
     per_device_train_batch_size: int = 2,
     learning_rate: float = 3e-4,
-    dataset_huggingface_workspace: str = "mlabonne",
+    dataset_huggingface_workspace: str = "sflyranger17",
     is_dummy: bool = False,
 ) -> None:
     training_steps.train(

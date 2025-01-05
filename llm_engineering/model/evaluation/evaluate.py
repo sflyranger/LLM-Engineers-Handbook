@@ -206,10 +206,10 @@ def check_if_huggingface_dataset_exists(dataset_id: str, default_value: str) -> 
 # List of model IDs to evaluate
 model_ids = [
     check_if_huggingface_model_exists(
-        f"{MODEL_HUGGINGFACE_WORKSPACE}/TwinLlama-3.1-8B", default_value="mlabonne/TwinLlama-3.1-8B"
+        f"{MODEL_HUGGINGFACE_WORKSPACE}/TwinLlama-3.1-8B", default_value="sflyranger17/TwinLlama-3.1-8B"
     ),
     check_if_huggingface_model_exists(
-        f"{MODEL_HUGGINGFACE_WORKSPACE}/TwinLlama-3.1-8B-DPO", default_value="mlabonne/TwinLlama-3.1-8B-DPO"
+        f"{MODEL_HUGGINGFACE_WORKSPACE}/TwinLlama-3.1-8B-DPO", default_value="sflyranger17/TwinLlama-3.1-8B-DPO"
     ),
     "meta-llama/Llama-3.1-8B-Instruct",
 ]
@@ -218,7 +218,7 @@ if __name__ == "__main__":
     # Run generation
     for model_id in model_ids:
         dataset_name = check_if_huggingface_dataset_exists(
-            f"{DATASET_HUGGINGFACE_WORKSPACE}/llmtwin", default_value="mlabonne/llmtwin"
+            f"{DATASET_HUGGINGFACE_WORKSPACE}/llmtwin", default_value="sflyranger17/llmtwin"
         )
         generate_answers(model_id, dataset_name=dataset_name)
 
