@@ -10,24 +10,27 @@ from openai import OpenAI
 from tqdm.auto import tqdm
 from vllm import LLM, SamplingParams
 
+# Load environment variables
 OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
 DATASET_HUGGINGFACE_WORKSPACE = os.environ["DATASET_HUGGINGFACE_WORKSPACE"]
 MODEL_HUGGINGFACE_WORKSPACE = os.environ["MODEL_HUGGINGFACE_WORKSPACE"]
 IS_DUMMY = os.environ.get("IS_DUMMY", False)
 
+# Print evaluation parameters
 print("====== EVAL PARAMETERS ======")  # noqa
 print(f"{DATASET_HUGGINGFACE_WORKSPACE=}")  # noqa
 print(f"{MODEL_HUGGINGFACE_WORKSPACE=}")  # noqa
 print(f"{IS_DUMMY=}")  # noqa
 print("=============================")  # noqa
 
-
+# Function to generate answers using a given model and dataset
 def generate_answers(model_id: str, dataset_name: str):
     def format(sample):
         return "Below is an instruction that describes a task. Write a response that appropriately completes the request.\n\n### Instruction:\n{}\n\n### Response:\n".format(
             sample["instruction"]
         )
 
+    # Load the dataset
     dataset = load_dataset(dataset_name, split="test")
     if IS_DUMMY:
         try:
@@ -37,21 +40,24 @@ def generate_answers(model_id: str, dataset_name: str):
     print(f"Dataset size: {len(dataset)}")  # noqa
     dataset = dataset.map(lambda sample: {"prompt": format(sample)})
 
+    # Generate answers using the model
     print(f"Generating answers for {model_id}")  # noqa
     llm = LLM(model=model_id, max_model_len=2048)
     sampling_params = SamplingParams(temperature=0.8, top_p=0.95, min_p=0.05, max_tokens=2048)
     outputs = llm.generate(dataset["prompt"], sampling_params)
 
+    # Extract answers and add them to the dataset
     answers = [output.outputs[0].text for output in outputs]
     dataset = dataset.add_column("answers", answers)
 
+    # Upload results to Hugging Face Hub
     print(f"Uploading results for {model_id}")  # noqa
     dataset.push_to_hub(f"{DATASET_HUGGINGFACE_WORKSPACE}/{model_id.split('/')[-1]}-results")
     gc.collect()
 
     return dataset
 
-
+# Function to evaluate an answer based on accuracy and style
 def evaluate_answer(instruction: str, answer: str, client: OpenAI) -> dict:
     prompt = f"""You are an expert judge. Please evaluate the quality of a given answer to an instruction based on two criteria:
 1. Accuracy: How factually correct is the information presented in the answer? You are a technical expert in this topic.
@@ -87,6 +93,7 @@ Provide your evaluation in JSON format with the following structure:
 }}
 """
 
+    # Generate evaluation using OpenAI API
     completion = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
@@ -104,12 +111,12 @@ Provide your evaluation in JSON format with the following structure:
     # Parse the structured output
     return json.loads(completion.choices[0].message.content)
 
-
+# Function to evaluate a batch of instruction-answer pairs
 def evaluate_batch(batch, start_index):
     client = OpenAI(api_key=OPENAI_API_KEY)
     return [(i, evaluate_answer(instr, ans, client)) for i, (instr, ans) in enumerate(batch, start=start_index)]
 
-
+# Function to evaluate answers for a given model
 def evaluate_answers(model_id: str, num_threads: int = 10, batch_size: int = 5) -> Dataset:
     # Load the dataset
     dataset = load_dataset(f"{DATASET_HUGGINGFACE_WORKSPACE}/{model_id.split('/')[-1]}-results", split="all")
@@ -122,6 +129,7 @@ def evaluate_answers(model_id: str, num_threads: int = 10, batch_size: int = 5) 
 
     evaluations = [None] * len(dataset)
 
+    # Evaluate batches concurrently
     with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
         futures = [executor.submit(evaluate_batch, batch, start_index) for start_index, batch in batches]
 
@@ -160,11 +168,12 @@ def evaluate_answers(model_id: str, num_threads: int = 10, batch_size: int = 5) 
         dataset = dataset.remove_columns(["style"])
     dataset = dataset.add_column("style", style_scores)
 
+    # Upload updated dataset to Hugging Face Hub
     dataset.push_to_hub(f"{DATASET_HUGGINGFACE_WORKSPACE}/{model_id.split('/')[-1]}-results")
 
     return dataset
 
-
+# Function to check if a Hugging Face model exists
 def check_if_huggingface_model_exists(model_id: str, default_value: str) -> str:
     api = HfApi()
 
@@ -179,7 +188,7 @@ def check_if_huggingface_model_exists(model_id: str, default_value: str) -> str:
 
     return model_id
 
-
+# Function to check if a Hugging Face dataset exists
 def check_if_huggingface_dataset_exists(dataset_id: str, default_value: str) -> str:
     api = HfApi()
 
@@ -194,7 +203,7 @@ def check_if_huggingface_dataset_exists(dataset_id: str, default_value: str) -> 
 
     return dataset_id
 
-
+# List of model IDs to evaluate
 model_ids = [
     check_if_huggingface_model_exists(
         f"{MODEL_HUGGINGFACE_WORKSPACE}/TwinLlama-3.1-8B", default_value="mlabonne/TwinLlama-3.1-8B"
