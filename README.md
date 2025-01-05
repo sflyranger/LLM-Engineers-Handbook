@@ -342,3 +342,10 @@ Extract:
 
 #### `push_to_huggingface.py`
 This file creates a zenml step that serves as the final step in the pipeline. Essentially it ensures that the proper access token is available in the users settings file, takes the generated datasets from the other steps and pushes them to the Huggingface hub along with their metadata.
+
+#### Final Remarks:
+After creating this pipeline I have a more in depth understanding of instruction and preference datasets. The way the authors have structured the repository is slightly different than the methodology used to describe the concepts in the book for instruction and preference datasets. They went through training a model after creating the instruction dataset using SFT techniques. This process was guided differently than the repository but I assume that is because their process used implementation that was more general and less based in the current class system. The final goal is to make a full and operational LLM-twin that is hosted in AWS Sagemaker so I assume the logic in the following chapters will show this implementation and how the code was changed.
+
+Next I will create the training pipeline that will incorporate logic for both preference and instruction dataset usage for DPO (Direct Preference Optimization) and SFT (Simple Fine Tuning).
+
+
