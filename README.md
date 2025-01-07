@@ -279,10 +279,18 @@ Quick Bullets about the general framework of creating the dataset.
 On day 8 I noticed that the generation pipeline was different than the baseline one mentioned in the book. The generation pipeline encompasses not only the creation of Instruction datasets, but also preference datasets. I decided to go ahead and code out the entire process. The preference dataset is very similar to the instruction dataset generation but there was a strong difference in the prompt engineering used to ensure correctness of the outputs. The pipeline consists of 5 different zenml steps from 5 seperate python files, each with its own purpose and functionality. I will be going a bit more in depth about how each of them work and explaining my understanding of the underlying llm engineering logic used to incorporate them. Since I have already gone in depth about the Instruction dataset generation that is in in the `generate_instruction_dataset.py` file,  I will be skipping that file and focusing on the other ones.
 
 ---
+
 #### `query_feature_store`
 This file is designed to create a zenml step that queries the documents in mongo db based on the NoSQLBaseDocument class. It pulls all of the document types using the ThreadPoolExecutor and uses other functions such as bulk_find from the CleanedDocument class.
+
+---
+
 #### `create_prompts.py`
-This creates a zenml step that is built upon multiple other classes and files. It's purpose is to intake queried clean documents after calling the query_feature_store() function and generate a list of generated dataset samples that are built on top of engineered prompts. This allows for the instruction and preference datasets to be created because they feed off of prompts to ensure a set JSON format as the output. 
+This creates a zenml step that is built upon multiple other classes and files. It's purpose is to intake queried clean documents after calling the query_feature_store() function and generate a list of generated dataset samples that are built on top of engineered prompts. This allows for the instruction and preference datasets to be created because they feed off of prompts to ensure a set JSON 
+format as the output. 
+
+---
+
 #### `generate_instruction_dataset.py`
 This file creates a zenml step that is designed to take in a set of generated prompts and create an instruction dataset that follows a specific template string pattern. The prompts are split based on a test_split_size and stored separately. The instruction dataset output is designed to be a set of instruction-answer pairs that are consistent, non-redundant, and are output in JSON format. This allows for their proper storage in huggingface and parsing when it comes to training the model for output generation. 
 
@@ -309,6 +317,8 @@ Do not add any extra characters and provide your response in JSON format with th
 
 Extract:
 {extract}
+
+---
 
 #### `generate_preference_dataset.py`
 This file is creates a zenml step for the pipeline to generate preference datasets. It also takes in a set of prompts and follows a very similar pattern as the `generate_instruction_dataset.py` file. It splits the prompts based on a test_split_size and stored separately. These datasets also are created from a prompt template that asks the model to store them in a specific JSON format. However, their format is different as they create output based on instruction-answer triples.
@@ -340,12 +350,64 @@ Do not add any extra characters and provide your response in JSON format with th
 Extract:
 {extract}
 
+---
+
 #### `push_to_huggingface.py`
 This file creates a zenml step that serves as the final step in the pipeline. Essentially it ensures that the proper access token is available in the users settings file, takes the generated datasets from the other steps and pushes them to the Huggingface hub along with their metadata.
+
+---
 
 #### Final Remarks:
 After creating this pipeline I have a more in depth understanding of instruction and preference datasets. The way the authors have structured the repository is slightly different than the methodology used to describe the concepts in the book for instruction and preference datasets. They went through training a model after creating the instruction dataset using SFT techniques. This process was guided differently than the repository but I assume that is because their process used implementation that was more general and less based in the current class system. The final goal is to make a full and operational LLM-twin that is hosted in AWS Sagemaker so I assume the logic in the following chapters will show this implementation and how the code was changed.
 
 Next I will create the training pipeline that will incorporate logic for both preference and instruction dataset usage for DPO (Direct Preference Optimization) and SFT (Simple Fine Tuning).
+
+### Day 10:
+#### Finishing the training pipeline:
+Today consisted of creating the files needed to implement the training pipeline. This process consisted of creating one zenml step that pulls functions from two other .py files in the llm_engineering folder. One is called `finetune.py` the other is called `sagemaker.py`. I will go a bit more in depth about the methods used in these files and the learning I gained from reading chapter 5 and 6 of the LLM engineers handbook.
+
+---
+### `finetune.py`
+The sections below describe the concepts and methods used within this file.
+
+#### SFT:
+SFT or Simple Fine-Tuning is the method used to create the finetuning process on the instruction dataset. This process entails using the instruction generated dataset and performing finetuning using LORA. Many hyperparameters are implemented that can be experimented with to improve overall generation of the instruction answer pairs into the correct chat template format. When using LORA only specific layers or target modules are actually trained while the primary pre-trained model weights remain fixed. For this process we use a defined trainer in the transformers library called SFTTrainer on the meta/Llama-3.1-8B model
+
+
+#### DPO: 
+DPO or Direct preference optimization is a method of evaluation that intakes the preference dataset and improves the quality of generated responses by finetuning and comparing the 'rejected' outputs from the model to specific chunks of text that represent the ground truth answer called 'chosen' (see above). The primary difference here is that we are training the model to choose the response that it prefers from the generated responses and then changing the weights of only the layers that are trained using LORA. Essentially we are asking the model to do a task that is normally done by humans, iteratively choose an answer it prefers and then generate a response based on those weights. It can be implemeted using a binary-cross entropy loss function as the objective function assigning higher probabilities to the preferred responses (chosen) while assigning lower probabilities to the non-preferred ones (rejected). It is also important to note that when using DPO you have to divide the maximum sequence length that the model usually intakes and divide it by two so that the rejected and chosen responses can be compared in the same sequence. Also, for DPO finetuning we use a different TrainingArguments class called DPOTrainer.
+
+### `sagemaker.py`
+This file serves as the endpoint to execute the finetuning steps for SFT and DPO for the instruction and preference models. It sets up the endpoint, defines hyperparameters and starts a training job on AWS sagemaker.
+
+---
+
+### Day 11:
+Today I focused on coding and rereading the chapter over model evaluation. Various methods are described and implemented to monitor the performance of three models that are to be created using LLM as a Judge methodology. LLM evaluation is very different than traditional ML evaluation in that LLM evaluation requires qualitative monitoring rather than the traiditional metric monitoring methods used in ML such as F1 scores, accuracy, precision, and recall. Below I go a little more in depth into the contents covered by chapter 7 of the LLM handbook and the methods used in this project to monitor my specific LLMs.
+
+---
+#### Post Fine-tuning Benchmarks
+The book mentions many methods used to evaluate a model pre-training and post-training. The list is quite long so I will not go into great depth about them. However, it is important to note that the differences in evaluation scores from a pre-trained model to a fine-tuned model can be compared to test for contamination issues and determine the relative improvement of the model from the fine-tuning process. The primry and most well known of these methods is the MMLU knowledge evaluation that tests the models capability to answer multiple choice questions across 57 subjects. 
+
+When it comes to post fine-tuning, other methods can also be used to monitor the effectiveness of the new model such as:
+
+###### IFEval
+- Assesses a models ability to follow instructions along a set of particular constraints, like not outputting commas.
+###### Chatbot Arena
+A framework where humans can compare two models and vote on their responses.
+###### AlpacaEval
+An automatic evaluation method for fine-tuned models that highly correlates with Chatbot arena.
+###### MT Bench
+Evaluates models on their ability to maintain context and provide coherent responses in a multi-turn format.
+###### GAIA
+Evaluates tool usage such as web browsin in a multi step fashion.
+
+---
+
+### RAG, Ragas, and ARES
+
+
+
+
 
 

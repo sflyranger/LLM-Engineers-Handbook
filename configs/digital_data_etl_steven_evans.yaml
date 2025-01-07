@@ -6,7 +6,7 @@ settings:
     synchronous: false
     
 parameters:
-  user_full_name: Maxime Labonne # [First Name(s)] [Last Name]
+  user_full_name: Steven Evans # [First Name(s)] [Last Name]
   links:
     # Personal Blog
     - https://mlabonne.github.io/blog/posts/2024-07-29_Finetune_Llama31.html
