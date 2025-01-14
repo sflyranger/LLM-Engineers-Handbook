@@ -400,7 +400,7 @@ An automatic evaluation method for fine-tuned models that highly correlates with
 ###### MT Bench
 Evaluates models on their ability to maintain context and provide coherent responses in a multi-turn format.
 ###### GAIA
-Evaluates tool usage such as web browsin in a multi step fashion.
+Evaluates tool usage such as web browsing in a multi step fashion.
 
 ---
 
