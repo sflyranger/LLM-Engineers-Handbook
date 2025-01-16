@@ -72,15 +72,15 @@ class ChunkingHandlerFactory:
     """
 
     @staticmethod
-    def create_handler(self, data_model: DataCategory) -> ChunkingDataHandler:
-    if data_category==DataCategory.POSTS:
-        return PostChunkingHandler()
-    elif data_category==DataCategory.ARTICLES:
-        return ArticleChunkingHandler()
-    elif data_category==DataCategory.REPOSITORIES:
-        return RepositoryChunkingHandler()
-    else:
-        raise ValueError("Unsupported data type.")
+    def create_handler(data_category: DataCategory) -> ChunkingDataHandler:
+        if data_category == DataCategory.POSTS:
+            return PostChunkingHandler()
+        elif data_category==DataCategory.ARTICLES:
+            return ArticleChunkingHandler()
+        elif data_category==DataCategory.REPOSITORIES:
+            return RepositoryChunkingHandler()
+        else:
+            raise ValueError("Unsupported data type.")
 
 class ChunkingDispatcher:
     """
@@ -88,7 +88,7 @@ class ChunkingDispatcher:
 
     """
 
-    factory = ChunkingHandlerFactory()
+    factory = ChunkingHandlerFactory
 
     @classmethod
     def dispatch(cls, data_model: VectorBaseDocument) -> list[VectorBaseDocument]:
@@ -125,7 +125,7 @@ class EmbeddingDispatcher:
     
     """
     
-    factory = EmbeddingHandlerFactory()
+    factory = EmbeddingHandlerFactory
 
     @classmethod
     def dispatch(cls, data_model: VectorBaseDocument | list[VectorBaseDocument]) -> VectorBaseDocument | list[VectorBaseDocument]:

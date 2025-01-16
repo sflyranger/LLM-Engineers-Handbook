@@ -31,6 +31,7 @@ class QueryExpansionTemplate(PromptTemplateFactory):
 
 # Creating the SelfQueryTemplate class to extract the relevant information from each query.
 class SelfQueryTemplate(PromptTemplateFactory):
+    ##############MAY NEED TO CHANGE THE ID NUMBER##################
     prompt: str = """You are an AI mode assistant. Your task is to extact information from a user question.
     The required information that needs to be extracted is the user name of user id. 
     Your response should consist of only the extracted user name (e.g., John Doe) or id (e.g., 1345256), nothing else.

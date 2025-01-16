@@ -1,6 +1,5 @@
 import concurrent.futures
 
-
 import opik
 from loguru import logger
 from qdrant_client.models import FieldCondition, Filter, MatchValue
@@ -14,7 +13,7 @@ from llm_engineering.domain.embedded_chunks import (
     EmbeddedRepositoryChunk
 )
 
-from llm_engineering.domain.queries import Query
+from llm_engineering.domain.queries import Query, EmbeddedQuery
 
 from .query_expansion import QueryExpansion
 from .reranking import Reranker
@@ -27,27 +26,31 @@ class ContextRetriever:
         self._metadata_extractor = SelfQuery(mock=mock)
         self._reranker = Reranker(mock=mock)
 
-    # Tracking te search function from the ContextRetriever class.
-    @opik.track(name="ContecRetriever.search")
+    # Tracking the search function from the ContextRetriever class.
+    @opik.track(name="ContextRetriever.search")
     def search(
         self, 
         query: str, 
         k: int=3, 
         expand_to_n_queries: int=3, 
     ) -> list:
+        # Convert the query string to a Query object
         query_model = Query.from_str(query)
         
+        # Extract metadata from the query
         query_model = self._metadata_extractor.generate(query_model)
 
         logger.info(
             f"Successfully extracted the author_full_name = {query_model.author_full_name} from the query.",
         )
 
+        # Generate expanded queries
         n_generated_queries = self._query_expander.generate(query_model, expand_to_n=expand_to_n_queries)
         logger.info(
             f"Successfully generated {len(n_generated_queries)} search queries.",
         )
 
+        # Perform concurrent search for each expanded query
         with concurrent.futures.ThreadPoolExecutor() as executor:
             search_tasks = [executor.submit(self._search, _query_model, k) for _query_model in n_generated_queries]
 
@@ -55,6 +58,67 @@ class ContextRetriever:
             n_k_documents = utils.misc.flatten(n_k_documents)
             n_k_documents = list(set(n_k_documents))
 
-        logger.info(f"{len(n_k_documents)} documents retrieved successfully."
-                    
+        logger.info(f"{len(n_k_documents)} documents retrieved successfully.")
+
+        # If there are documents present, rerank them based on the chunk/top_k settings.
+        if len(n_k_documents) > 0:
+            k_documents = self.rerank(query, chunks=n_k_documents, keep_top_k=k)
+        # Return an empty list if there are no documents.
+        else:
+            k_documents = []
+        
+        return k_documents
     
+    def search(self, query: Query, k: int = 3) -> list[EmbeddedChunk]:
+        assert k >= 3, "k should be >= 3"
+
+        def _search_data_category(
+                data_category_odm: type[EmbeddedChunk], embedded_query: EmbeddedQuery
+        ) -> list[EmbeddedChunk]:
+            
+            # Filter embeddings based on the author id, ensure the id values match.
+            if embedded_query.author_id:
+                query_filter = Filter(
+                    must = [
+                        FieldCondition(
+                            key='author_id', 
+                            match=MatchValue(
+                                value=str(embedded_query.author_id),
+                            )
+                        )
+                    ]
+                )
+            else:
+                query_filter = None
+            
+            return data_category_odm.search(
+                query_vector=embedded_query.embedding, 
+                limit=k // 3, 
+                query_filter=query_filter
+            )
+        
+        # Dispatch and grab the query
+        embedded_query: EmbeddedQuery = EmbeddingDispatcher.dispatch(query)
+
+        # Search for chunks in different data categories
+        post_chunks = _search_data_category(EmbeddedPostChunk, embedded_query)
+        article_chunks = _search_data_category(EmbeddedArticleChunk, embedded_query)
+        repositories_chunks = _search_data_category(EmbeddedRepositoryChunk, embedded_query)
+
+        # Combine retrieved chunks
+        retrieved_chunks = post_chunks + article_chunks + repositories_chunks
+
+        return retrieved_chunks
+    
+    def rerank(self, query: str | Query, chunks: list[EmbeddedChunk], keep_top_k: int) -> list[EmbeddedChunk]:
+        if isinstance(query, str):
+            query  = Query.from_str(query)
+
+        # Using the generate function to rerank the documents based on the query, chunks, and keep_top_k settings.
+        reranked_documents = self._reranker.generate(query=query, chunks=chunks, keep_top_k=keep_top_k)
+
+        logger.info(f"{len(reranked_documents)} documents reranked successfully.")
+
+        return reranked_documents
+
+
