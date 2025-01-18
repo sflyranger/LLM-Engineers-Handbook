@@ -15,7 +15,7 @@ class SelfQuery(RAGStep):
     # Tracking the SelfQuery generation process.
     @opik.track(name="SelfQuery.generate")
     def generate(self, query: Query) -> Query:
-        # Return mock queries if in mock mode.
+        # Return mock queries if in mock mode, which are copies of the original query.
         if self._mock:
             return query
         
@@ -23,10 +23,11 @@ class SelfQuery(RAGStep):
         prompt = SelfQueryTemplate().create_template()
         model = ChatOpenAI(model=settings.OPENAI_MODEL_ID, api_key=settings.OPENAI_API_KEY, temperature=0)
 
-        chain = prompt | model # Run the prompt then the model.
+        # Chain that will invoke multiple responses for the query.
+        chain = prompt | model 
 
         response = chain.invoke({"question": query})
-        user_full_name = response.content.strip("\n") # Strip the 
+        user_full_name = response.content.strip("\n") # Strip the whitespaces
 
         # If theres not a user_full_name present return only the query without the user name.
         if user_full_name == "none":
@@ -36,7 +37,8 @@ class SelfQuery(RAGStep):
         first_name, last_name = utils.split_user_full_name(user_full_name)
         # Get or create the user
         user = UserDocument.get_or_create(first_name=first_name, last_name=last_name)
-
+        
+        # Update the query with the retrieved metadata.
         query.author_id = user.id
         query.author_full_name = user.full_name
 

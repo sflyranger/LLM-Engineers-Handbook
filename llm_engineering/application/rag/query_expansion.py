@@ -8,6 +8,7 @@ from llm_engineering.settings import settings
 from .base import RAGStep
 from .prompt_templates import QueryExpansionTemplate
 
+# Creating the QueryExpansion class to generate expanded query versions of the original query.
 class QueryExpansion(RAGStep):
     # Tracks the execution of the generate method from the QueryExpansion class.
     @opik.track(name="QueryExpansion.generate")
@@ -15,21 +16,22 @@ class QueryExpansion(RAGStep):
         # Ensure expand_to_n is greater than 0
         assert expand_to_n > 0, f"'expand_to_n' should be greater than 0. Got {expand_to_n}."
 
-        # Return mock queries if in mock mode
+        # Return mock queries if in mock mode.
+        # Mock queries are just copies of the original query without actually calling the api.
         if self._mock:
             return [query for _ in range(expand_to_n)]
         
         # Create a query expansion template
         query_expansion_template = QueryExpansionTemplate()
-        prompt = query_expansion_template.create_template(expand_to_n - 1)
+        prompt = query_expansion_template.create_template(expand_to_n - 1) # We subtract one here to exclude the original query.
         
-        # Initialize the OpenAI model
+        # Initialize the OpenAI model with 0 temp for deterministic outputs.
         model = ChatOpenAI(model=settings.OPENAI_MODEL_ID, api_key=settings.OPENAI_API_KEY, temperature=0)
 
-        # Create a chain of prompt and model
+        # Create a chain of prompt and model, supplying a chain of responses.
         chain = prompt | model
 
-        # Invoke the chain with the query
+        # Invoke the chain with the same query.
         response = chain.invoke({"question", query})
         result = response.content
 
@@ -38,6 +40,7 @@ class QueryExpansion(RAGStep):
 
         # Create a list of queries
         queries = [query]
+        # Parsing and cleaning the expanded queries.
         queries += [
             query.replace_content(stripped_content)
             for content in queries_content

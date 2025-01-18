@@ -19,12 +19,12 @@ from .query_expansion import QueryExpansion
 from .reranking import Reranker
 from .self_query import SelfQuery
 
-# Creating the base class to retrieve the relevant context from the vector DB.
+# Creating the base class to perform query expansion, self querying, and reranking to pull the best information for the given query.
 class ContextRetriever:
     def __init__(self, mock: bool = False) -> None:
-        self._query_expander = QueryExpansion(mock=mock)
-        self._metadata_extractor = SelfQuery(mock=mock)
-        self._reranker = Reranker(mock=mock)
+        self._query_expander = QueryExpansion(mock=mock) # initialize the QueryExpansion instance.
+        self._metadata_extractor = SelfQuery(mock=mock)# Initialize the SelfQuery instance.
+        self._reranker = Reranker(mock=mock) # Initialize the Reranker instance.
 
     # Tracking the search function from the ContextRetriever class.
     @opik.track(name="ContextRetriever.search")
@@ -69,6 +69,7 @@ class ContextRetriever:
         
         return k_documents
     
+    # This step is crucial to limitiing the vector search space and keeping only the relevant documents for the query.
     def search(self, query: Query, k: int = 3) -> list[EmbeddedChunk]:
         assert k >= 3, "k should be >= 3"
 
@@ -93,7 +94,8 @@ class ContextRetriever:
             
             return data_category_odm.search(
                 query_vector=embedded_query.embedding, 
-                limit=k // 3, 
+                limit=k // 3,  # we divide by three here because we have repositories, articles and posts. 
+                # I may need to make this divided by 2 becuase I probably wont have any article documents.
                 query_filter=query_filter
             )
         

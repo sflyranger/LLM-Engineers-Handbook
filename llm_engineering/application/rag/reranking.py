@@ -12,19 +12,19 @@ class Reranker(RAGStep):
     def __init__(self, mock: bool=False) -> None:
         super().__init__(mock=mock)  # Ensure inherited mock setting.
 
-        # Initialize the cross-encoder model
+        # Initialize the singleton cross-encoder model to perform the cosine similarity comparison of queries.
         self._model = CrossEncoderModelSingleton()
 
     # Tracking the status of the Reranker.generate process
     @opik.track(name="Reranker.generate")
     def generate(self, query: Query, chunks: list[EmbeddedChunk], keep_top_k: int) -> list[EmbeddedChunk]:
-        # Return mock queries if in mock mode
+        # Return mock queries if in mock mode, resulting in copies of the original chunks.
         if self._mock:
             return chunks
         
         # Create tuples of query and chunk content
         query_doc_tuples = [(query.content, chunk.content) for chunk in chunks]
-        # Get scores for each query-chunk pair
+        # Get scores for each query-chunk pair.
         scores = self._model(query_doc_tuples)
 
         # Zip scores with chunks and sort by score in descending order

@@ -3,6 +3,7 @@ from langchain.prompts import PromptTemplate
 from .base import PromptTemplateFactory
 
 # QueryExpansionTemplate inheriting from the PromptTemplateFactory base class
+
 class QueryExpansionTemplate(PromptTemplateFactory):
     # Base prompt to enhance similarity search
     prompt: str = """You are an AI language model assistant. Your task is to generate {expand_to_n}
@@ -21,15 +22,17 @@ class QueryExpansionTemplate(PromptTemplateFactory):
     def create_template(self, expand_to_n: int) -> PromptTemplate:
         return PromptTemplate(
             template=self.prompt, 
+            # Question will be changed everytime the chain is called from query expansion.
             input_variables=["question"], 
+            # Providing the following as partial vairbles to make them immutable at runtime.
             partial_variables={
-                "seperator": self.seperator, 
-                "expand_to_n": self.expand_to_n,
+                "seperator": self.seperator, # providing a unique string to split the generated queries.
+                "expand_to_n": self.expand_to_n, # Defining how many queries to generate.
             },
         )
     
 
-# Creating the SelfQueryTemplate class to extract the relevant information from each query.
+# Creating the SelfQueryTemplate class to extract the relevant information from each query, such as metadata like te ID, comments, shares etc.
 class SelfQueryTemplate(PromptTemplateFactory):
     ##############MAY NEED TO CHANGE THE ID NUMBER##################
     prompt: str = """You are an AI mode assistant. Your task is to extact information from a user question.
