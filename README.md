@@ -394,13 +394,13 @@ When it comes to post fine-tuning, other methods can also be used to monitor the
 ###### IFEval
 - Assesses a models ability to follow instructions along a set of particular constraints, like not outputting commas.
 ###### Chatbot Arena
-A framework where humans can compare two models and vote on their responses.
+- A framework where humans can compare two models and vote on their responses.
 ###### AlpacaEval
-An automatic evaluation method for fine-tuned models that highly correlates with Chatbot arena.
+- An automatic evaluation method for fine-tuned models that highly correlates with Chatbot arena.
 ###### MT Bench
-Evaluates models on their ability to maintain context and provide coherent responses in a multi-turn format.
+- Evaluates models on their ability to maintain context and provide coherent responses in a multi-turn format.
 ###### GAIA
-Evaluates tool usage such as web browsing in a multi step fashion.
+- Evaluates tool usage such as web browsing in a multi step fashion.
 
 ---
 
