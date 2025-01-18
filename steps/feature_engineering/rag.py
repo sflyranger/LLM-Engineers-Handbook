@@ -2,7 +2,7 @@ from typing_extensions import Annotated
 from zenml import get_step_context, step
 
 from llm_engineering.application import utils
-from llm_engineering.application.preprocessing import ChunkingDispatcher, EmbeddingDispatcher
+from llm_engineering.application.preprocessing.dispatchers import ChunkingDispatcher, EmbeddingDispatcher
 from llm_engineering.domain.chunks import Chunk
 from llm_engineering.domain.embedded_chunks import EmbeddedChunk 
 
@@ -28,7 +28,7 @@ def chunk_and_embed(
             batch_embedded_chunks = EmbeddingDispatcher.dispatch(batched_chunks)
             embedded_chunks.extend(batch_embedded_chunks)
         
-        metadata["embedding"] = _add_embeddings_matadata(embedded_chunks, metadata["embedding"])
+        metadata["embedding"] = _add_embeddings_metadata(embedded_chunks, metadata["embedding"])
         metadata["num_chunks"] = len(embedded_chunks)
         metadata["num_embedded_chunks"] = len(embedded_chunks)
 
