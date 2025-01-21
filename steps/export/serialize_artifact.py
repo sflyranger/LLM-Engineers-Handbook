@@ -6,15 +6,15 @@ from zenml import get_step_context, step
 
 #Defining the zenml step to serialize an artifact
 @step
-def serialize_artifact(artifact: Any, artifact_name:str) -> Annotated[dict, "serialized_artifact"]:
-    serialize_artifact = _serialize_artifact(artifact)
+def serialize_artifact(artifact: Any, artifact_name: str) -> Annotated[dict, "serialized_artifact"]:
+    serialized_artifact = _serialize_artifact(artifact)
 
-    # If None type raise an error
-    if serialize_artifact is None: 
+    # If None type raise an error.
+    if serialized_artifact is None: 
         raise ValueError("Artifact is None")
     
-    # Create the dictionary object from the artifact data.
-    elif not isinstance(serialize_artifact, dict):
+    # Create the dictionary object from the artifact data if it's not already.
+    elif not isinstance(serialized_artifact, dict):
         serialized_artifact = {"artifact_data": serialize_artifact}
 
     # Initialize the step context.
