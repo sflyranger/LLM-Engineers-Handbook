@@ -63,7 +63,7 @@ def load_model(
 # takes in model_name, storage_variables, and hyperparameters and returns:
 # a tuple of the model and tokenizer.
 def finetune(
-    finetuning_type=Literal["sft", "dpo"], 
+    finetuning_type:Literal["sft", "dpo"], 
     model_name: str, 
     output_dir: str, 
     dataset_huggingface_workspace: str, 
