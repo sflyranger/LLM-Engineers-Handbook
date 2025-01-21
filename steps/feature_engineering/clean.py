@@ -7,24 +7,24 @@ from llm_engineering.domain.cleaned_documents import CleanedDocument
 # Zenml step to clean all documents.
 @step 
 def clean_documents(
-    documents = Annotated[list, "raw_documents"], 
+    documents: Annotated[list, "raw_documents"], 
 )-> Annotated[list, "cleaned_documents"]:
 
 # Initialize empty list.
-cleaned_documents = []
+    cleaned_documents = []
 
 # Iterate over documents, clean each and append to the cleaned_documents list.
-for document in documents:
-    cleaned_document = CleaningDispatcher.dispatch(document)
-    cleaned_documents.append(cleaned_document)
+    for document in documents:
+        cleaned_document = CleaningDispatcher.dispatch(document)
+        cleaned_documents.append(cleaned_document)
 
 # Intitialize the step context.
-step_context = get_step_context()
+    step_context = get_step_context()
 
 # Add the metadata for the output to the step context.
-step_context.add_output_metadata(output_name="cleaned_documents", metadata=_get_metadata(cleaned_documents))
+    step_context.add_output_metadata(output_name="cleaned_documents", metadata=_get_metadata(cleaned_documents))
 
-return cleaned_documents 
+    return cleaned_documents 
 
 
 def _get_metadata(cleaned_documents: list[CleanedDocument]) -> dict:
