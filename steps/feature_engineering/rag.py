@@ -58,7 +58,7 @@ def _add_chunks_metadata(chunks: list[Chunk], metadata=dict) -> dict:
     return metadata
 
 
-def _add_embeddings_metadata(embedded_chunks: list[EmbeddedChunk], metadata=dict) -> dict:
+def _add_embeddings_metadata(embedded_chunks: list[EmbeddedChunk], metadata: dict) -> dict:
     for embedded_chunk in embedded_chunks:
         category = embedded_chunk.get_category()
         if category not in metadata:
