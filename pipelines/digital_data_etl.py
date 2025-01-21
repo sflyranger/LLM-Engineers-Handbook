@@ -1,5 +1,8 @@
 from steps.etl import crawl_links, get_or_create_user
 
+from zemnl import pipeline
+
+
 # first pipeline step that gets and creates the user and crawls the designated links in the user configuration file
 @pipeline
 def digital_data_etl(user_full_name: str, links:list[str]) -> str:
