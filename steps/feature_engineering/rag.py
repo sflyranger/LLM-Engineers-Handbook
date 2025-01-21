@@ -28,17 +28,17 @@ def chunk_and_embed(
             batch_embedded_chunks = EmbeddingDispatcher.dispatch(batched_chunks)
             embedded_chunks.extend(batch_embedded_chunks)
         
-        metadata["embedding"] = _add_embeddings_metadata(embedded_chunks, metadata["embedding"])
-        metadata["num_chunks"] = len(embedded_chunks)
-        metadata["num_embedded_chunks"] = len(embedded_chunks)
+    metadata["embedding"] = _add_embeddings_metadata(embedded_chunks, metadata["embedding"])
+    metadata["num_chunks"] = len(embedded_chunks)
+    metadata["num_embedded_chunks"] = len(embedded_chunks)
 
-        # Intitialize the step context for Zenml.
-        step_context = get_step_context()
-        # Store the output metadata in the step_context.
-        step_context.add_output_metadata(output_name="embedded_documents", metadata=metadata)
+    # Intitialize the step context for Zenml.
+    step_context = get_step_context()
+    # Store the output metadata in the step_context.
+    step_context.add_output_metadata(output_name="embedded_documents", metadata=metadata)
 
         
-        return embedded_chunks
+    return embedded_chunks
 
 
 def _add_chunks_metadata(chunks: list[Chunk], metadata=dict) -> dict:
