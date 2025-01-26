@@ -11,7 +11,7 @@ def configure_opik()-> None:
         
         # Try to make the connnection
         try:
-            client = OpikConfigurator(api_key=COMET_API_KEY)
+            client = OpikConfigurator(api_key=settings.COMET_API_KEY)
             default_workspace = client._get_default_workspace()
         
         # If no default workspace is found intiate interactive mode.
@@ -22,7 +22,7 @@ def configure_opik()-> None:
         os.environ["OPIK_PROJECT_NAME"] = settings.COMET_PROJECT
 
         opik.configure(api_key=settings.COMET_API_KEY, workspace=default_workspace, use_local=False, force=True)
-        logger.info("Opik configure successfully.")
+        logger.info("Opik configured successfully.")
 
     else:
         logger.warning(
