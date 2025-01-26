@@ -16,7 +16,7 @@ class Chunk(VectorBaseDocument, ABC):
 
 
 class PostChunk(Chunk):
-    image: Optional[str]
+    image: Optional[str] = None 
 
     class Config:
         category = DataCategory.POSTS 

@@ -32,6 +32,7 @@ class CleanedArticleDocument(CleanedDocument):
 class CleanedRepositoryDocument(CleanedDocument):
     name: str
     link: str
+    
     class Config:
         name = "cleaned_repositories"
         category = DataCategory.REPOSITORIES 

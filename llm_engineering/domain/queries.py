@@ -1,6 +1,6 @@
 from pydantic import UUID4, Field
 
-from llm_engineering.domain.base import VactorBaseDocument
+from llm_engineering.domain.base import VectorBaseDocument
 from llm_engineering.domain.types import DataCategory 
 
 
@@ -8,7 +8,7 @@ class Query(VectorBaseDocument):
     content: str
     author_id: UUID4 | None = None
     author_full_name: str | None = None
-    metadata = dict = Field(default_factory=dict)
+    metadata: dict = Field(default_factory=dict)
 
     class Config:
         category = DataCategory.QUERIES
@@ -18,7 +18,7 @@ class Query(VectorBaseDocument):
         return Query(content=query.strip("\n "))
     
     
-    def replace_content(cls, new_content:str) -> "Query":
+    def replace_content(self, new_content:str) -> "Query":
         """
         Function to replace the old query content with new content.
 

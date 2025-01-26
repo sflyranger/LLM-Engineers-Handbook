@@ -55,7 +55,7 @@ class InstructDataset(VectorBaseDocument):
 class TrainTestSplit(VectorBaseDocument):
     train: dict
     test: dict
-    test_split_size: dict 
+    test_split_size: float 
 
     def to_huggingface(self, flatten: bool = False) -> "DatasetDict":
         # Pull the training items, for the given categories in each dataset, push the values into hugging face via the to_huggingface function.
@@ -92,7 +92,7 @@ class PreferenceDataset(VectorBaseDocument):
     samples: list[PreferenceDatasetSample]
 
     class Config:
-        DataCategory.PREFERENCE_DATASET
+        category = DataCategory.PREFERENCE_DATASET
     
     @property
     def num_samples(self) -> int:
