@@ -19,7 +19,7 @@ class CustomArticleCrawler(BaseCrawler):
     def __init__(self)-> None:
         super().__init__() # inheriting all properties from the Basecrawler initialization
     
-    def extract(self, link:str, **kwargs) -> None:
+    def extract(self, link: str, **kwargs) -> None:
         old_model = self.model.find(link=link)
         if old_model is not None:
             logger.info(f"Article already exists in the database: {link}") # sending logger info if the article already is present in the db

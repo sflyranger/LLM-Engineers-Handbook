@@ -74,4 +74,4 @@ class GithubCrawler(BaseCrawler):
         finally:
             shutil.rmtree(local_temp) # cleaning up the temporary directory
 
-        logger.info(f"Finished scrapping GitHub repository: {link}"
+        logger.info(f"Finished scrapping GitHub repository: {link}")

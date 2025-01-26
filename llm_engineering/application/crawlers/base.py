@@ -4,7 +4,7 @@ from tempfile import mkdtemp
 
 import chromedriver_autoinstaller
 from selenium import webdriver # tool used for automating web browsers
-from selenium.webdriver.chrome.options import options
+from selenium.webdriver.chrome.options import Options
 
 from llm_engineering.domain.documents import NoSQLBaseDocument
 
@@ -20,11 +20,11 @@ class BaseCrawler(ABC):
 
     # setting an abstract method, meaning all subclasses of BaseCrawler must implement this method, if not it cannot be instatiated
     @abstractmethod
-    def extract(self, link:str, **kwargs)-> None: ...
+    def extract(self, link: str, **kwargs)-> None: ...
 
 # setting up the BaseMediumCrawler class that inherits from ABC and BaseCrawler
 class BaseSeleniumCrawler(BaseCrawler, ABC):
-    def __init__(self, scroll_limit:int = 5) -> None:
+    def __init__(self, scroll_limit: int = 5) -> None:
         options = webdriver.ChromeOptions()
 
         options.add_argument("--no-sandbox") # disables Chrome snadbox for compatibility in restricted envrionments
@@ -62,7 +62,7 @@ class BaseSeleniumCrawler(BaseCrawler, ABC):
         
         while True:
             # scroll to the bottom of the page
-            self.driver.execute_script("window.scrollTo(0,document.body.scrollHeight);")
+            self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             time.sleep(5) # wait for the page to load new content
             # get the new page height after scrolling
             new_height = self.driver.execute_script("return document.body.scrollHeight")

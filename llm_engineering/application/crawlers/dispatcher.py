@@ -19,7 +19,8 @@ class CrawlerDispatcher:
     # Factory method to create a new CrawlerDispatcher instance
     def build(cls) -> "CrawlerDispatcher":
         dispatcher = cls()
-        return dsipatcher
+
+        return dispatcher
 
     def register_medium(self) -> "CrawlerDispatcher":
         # Register medium.com URLs with MediumCrawler
@@ -42,7 +43,7 @@ class CrawlerDispatcher:
         domain = parsed_domain.netloc
 
         # Add a regex pattern for the domain to the crawler registry
-        self._crawlers[r"https://www\.)?{}/*".format(re.escape(domain))] = crawler 
+        self._crawlers[r"https://(www\.)?{}/*".format(re.escape(domain))] = crawler
 
     # Retrieve a crawler instance based on a URL, defaulting to CustomArticleCrawler if no match is found
     def get_crawler(self, url: str) -> BaseCrawler:
