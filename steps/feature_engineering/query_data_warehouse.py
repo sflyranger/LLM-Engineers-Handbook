@@ -10,14 +10,14 @@ from llm_engineering.domain.documents import ArticleDocument, Document, PostDocu
 
 # Zenml step to query the data warehouse
 @step
-def query_data_warehouse(author_full_name: list[str]) -> Annotated[list, "raw_documents"]:
+def query_data_warehouse(author_full_names: list[str]) -> Annotated[list, "raw_documents"]:
     
     # Setting up empty lists for documents and authors
     documents = []
     authors = []
 
     # For every author query the data warehouse and return all results from the query.
-    for author_full_name in author_full_name:
+    for author_full_name in author_full_names:
         logger.info(f"Querying the data warehouse for user: {author_full_name}")
 
         first_name, last_name = utils.split_user_full_name(author_full_name)

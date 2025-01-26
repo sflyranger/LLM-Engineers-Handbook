@@ -14,7 +14,7 @@ def crawl_links(user:UserDocument, links: list[str]) -> Annotated[list[str], "cr
     
     dispatcher = CrawlerDispatcher.build().register_linkedin().register_medium().register_github()
 
-    logger.info(f"Starting to crawl {len(links)} links.")
+    logger.info(f"Starting to crawl {len(links)} link(s).")
 
     # empty dict to store the metadata
     metadata = {}
@@ -34,7 +34,7 @@ def crawl_links(user:UserDocument, links: list[str]) -> Annotated[list[str], "cr
     step_context.add_output_metadata(output_name="crawled_links", metadata=metadata)
 
     # log to track the number of successful links that were crawled
-    logger.info(f"Successfully crawled {successful_crawls}/{len(links)} links.")
+    logger.info(f"Successfully crawled {successful_crawls} / {len(links)} links.")
 
     return links
 # function to crawl individual links, outputting the result as a tuple with the outcome and the domain name.

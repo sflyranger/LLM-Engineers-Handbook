@@ -41,7 +41,7 @@ def chunk_and_embed(
     return embedded_chunks
 
 
-def _add_chunks_metadata(chunks: list[Chunk], metadata=dict) -> dict:
+def _add_chunks_metadata(chunks: list[Chunk], metadata: dict) -> dict:
     for chunk in chunks:
         category = chunk.get_category()
         if category not in metadata:
