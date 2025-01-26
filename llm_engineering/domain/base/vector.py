@@ -10,7 +10,7 @@ from qdrant_client.hhtp import exceptions
 from qdrant_client.http.models import Distance, VectorParams
 from qdrant_client.models import CollectionInfo, PointStruct, Record
 
-from llm_engineering.application.networks.embeddings import EmbeddingModelSingelton
+from llm_engineering.application.networks.embeddings import EmbeddingModelSingleton
 from llm_engineering.domain.exceptions import ImproperlyConfigured
 from llm_engineering.domain.types import DataCategory
 from llm_engineering.infrastructure.db.qdrant import connection
@@ -21,11 +21,11 @@ class VectorBaseDocument(BaseModel, Generic[T], ABC):
     id: UUID4 = Field(default_factory=uuid.uuid4)
 
     # equality condition function
-    def __eq__(self, value:object)-> bool:
+    def __eq__(self, value: object)-> bool:
         if not isinstance(value, self.__class__):
             return False
 
-        return self.id=value.id
+        return self.id == value.id
 
     # defining the hash method
     # here we generate a hash value based on the objects id attribute which in this case is the UUID4 
@@ -33,9 +33,9 @@ class VectorBaseDocument(BaseModel, Generic[T], ABC):
         return hash(self.id)
     
     @classmethod
-    def from_record(cls:Type[T], point: Record) -> T:
+    def from_record(cls: Type[T], point: Record) -> T:
         # confirming conformity to UUID4
-        _id: UUID(point.id, version=4)
+        _id = UUID(point.id, version=4)
 
         payload = point.payload or {}
 
@@ -49,7 +49,7 @@ class VectorBaseDocument(BaseModel, Generic[T], ABC):
         return cls(**attributes)
     
 
-    def to_point(self:T, **kwargs)-> PointStruct:
+    def to_point(self: T, **kwargs)-> PointStruct:
         exclude_unset = kwargs.pop("exclude_unset", False)
         by_alias = kwargs.pop("by_alias", True)
 
@@ -79,7 +79,7 @@ class VectorBaseDocument(BaseModel, Generic[T], ABC):
                     item[key] = str(value)
                 elif isinstance(value, list):
                     item[key] = [self._uuid_to_str(v) for v in value]
-                elif isiinstance(value, dict):
+                elif isinstance(value, dict):
                     item[key] = {k: self._uuid_to_str(v) for k, v in value.items()}
             
             return item
@@ -91,7 +91,7 @@ class VectorBaseDocument(BaseModel, Generic[T], ABC):
 
         except exceptions.UnexpectedResponse:
             logger.info(
-                f"Collection '{cls.get_collection_name()} does not exist. Trying to create the collection."
+                f"Collection '{cls.get_collection_name()}' does not exist. Trying to create the collection and reinsert the documents."
             )
             cls.create_collection()
 
@@ -103,13 +103,13 @@ class VectorBaseDocument(BaseModel, Generic[T], ABC):
                 return False
 
         return True
+
     @classmethod
     def _bulk_insert(cls: Type[T], documents: list["VectorBaseDocument"])-> None:
-        
-        # doc conversion
+        # Convert documents to points
         points = [doc.to_point() for doc in documents]
 
-        # document insert into qdrant
+        # Insert documents into Qdrant
         connection.upsert(collection_name=cls.get_collection_name(), points=points)
 
 
@@ -128,7 +128,6 @@ class VectorBaseDocument(BaseModel, Generic[T], ABC):
     def _bulk_find(cls:Type[T], limit: int = 10, **kwargs)-> tuple[list[T], UUID | None]:
         """
         Method to find multiple documents in chunks using offsets to keep track of where the next batch of documents should start.
-    
         """
         collection_name = cls.get_collection_name()
 
@@ -148,30 +147,31 @@ class VectorBaseDocument(BaseModel, Generic[T], ABC):
             next_offset = UUID(next_offset, version=4)
         
         return documents, next_offset
+
     @classmethod
-    def search(cls:Type[T], query_vector:list, limit: int=10, **kwargs) -> list[T]:
+    def search(cls: Type[T], query_vector: list, limit: int=10, **kwargs) -> list[T]:
         try:
-            # searching the documents using the query_vector, limiting the outcome to 10 docs.
-            documents =cls._search(query_vector=query_vector, limit=limit, **kwargs)
-            
+            # Searching the documents using the query_vector, limiting the outcome to 10 docs.
+            documents = cls._search(query_vector=query_vector, limit=limit, **kwargs)
         except exceptions.UnexpectedResponse:
             logger.error(f"Failed to search documents in '{cls.get_collection_name()}'.")
 
-            documents=[] # returning an empty list
-        
+            documents = [] # Returning an empty list
+        return documents
+    
     @classmethod
-    def _search(cls:Type[T], query_vector:list, limin:int=10, **kwargs)-> list[T]:
+    def _search(cls: Type[T], query_vector:list, limit:int=10, **kwargs)-> list[T]:
         collection_name = cls.get_collection_name()
         records = connection.search(
             collection_name=collection_name, 
             query_vector=query_vector, 
             limit=limit, 
-            with_payload=kwargs.pop("with_payload", True), # we do want the payload.
-            with_vectors=kwargs.pop("with_vectors", False), # we dont want to pull the full vector
+            with_payload=kwargs.pop("with_payload", True), # We do want the payload.
+            with_vectors=kwargs.pop("with_vectors", False), # We don't want to pull the full vector
             **kwargs, 
         )
         
-        # pulling the document attributes using the from_record method
+        # Pulling the document attributes using the from_record method
         documents = [cls.from_record(record) for record in records]
 
         return documents
@@ -199,16 +199,16 @@ class VectorBaseDocument(BaseModel, Generic[T], ABC):
         """
         Public facing method for interacting with the class. This method is a clean and intuitive version.
         """
-        # extracting the collection name
+        # Extracting the collection name
         collection_name = cls.get_collection_name()
-        # extracting the vector index
-        use_vector_index = cls.get_vector_index()
+        # Extracting the vector index
+        use_vector_index = cls.get_use_vector_index()
 
         return cls._create_collection(collection_name=collection_name, use_vector_index=use_vector_index)
     
     
     @classmethod 
-    def _create_collection(cls, collection_name:str, use_vector_index:bool = True)-> bool:
+    def _create_collection(cls, collection_name: str, use_vector_index: bool = True)-> bool:
         """
         Method to make connection to the Qdrant DB 
         using the given collection name and embedding vector config from the Embedding model.
@@ -229,21 +229,21 @@ class VectorBaseDocument(BaseModel, Generic[T], ABC):
                 "The class should define a Config class with"
                 "the 'category' property that reflects the collection's data category."
             )
-            # returning the category from the class config if present.
+            # Returning the category from the class config if present.
             return cls.Config.category
 
 
-    # method to return the collection name from the class config.
+    # Method to return the collection name from the class config.
     @classmethod 
     def get_collection_name(cls: Type[T]) -> str:
         if not hasattr(cls, "Config") or not hasattr(cls.Config, "name"):
             raise ImproperlyConfigured(
-                "The class should define a Config class with the `name` property that reflects the collection's name."
+                "The class should define a Config class with the 'name' property that reflects the collection's name."
             )
         return cls.Config.name
     
     
-    # returning the use_vector_index from the class config
+    # Returning the use_vector_index from the class config
     @classmethod
     def get_use_vector_index(cls: Type[T])-> bool:
         if not hasattr(cls, "Config") or not hasattr(cls.Config, "use_vector_index"):
@@ -255,65 +255,64 @@ class VectorBaseDocument(BaseModel, Generic[T], ABC):
     def group_by_class(
         cls: Type["VectorBaseDocument"], documents: list["VectorBaseDocument"]
     ) -> Dict["VectorBaseDocument", list["VectorBaseDocument"]]:
-        # calling the _group_by method on the documents giving the selector as the document class
+        # Calling the _group_by method on the documents giving the selector as the document class
         return cls._group_by(documents, selector=lambda doc: doc.__class__)
     
     @classmethod
     def group_by_category(cls: Type[T], documents: list[T]) -> Dict[DataCategory, list[T]]:
-        # calling the _group_by method on the documents and giving the designated selector as the key based on the category
-        return cls._group_by(documents, selector=lambda doc:doc.get_category())
+        # Calling the _group_by method on the documents and giving the designated selector as the key based on the category
+        return cls._group_by(documents, selector=lambda doc: doc.get_category())
 
 
     @classmethod
     def _group_by(cls: Type[T], documents: list[T], selector: Callable[[T], Any])-> Dict[Any, list[T]]:
-        
-        # setting up an empty dict
+        # Setting up an empty dict
         grouped = {}
-        # iterating over the documents
+        # Iterating over the documents
         for doc in documents:
-            # for each document calling the selector to determine the group by key
+            # For each document calling the selector to determine the group by key
             key = selector(doc)
 
             if key not in grouped:
                 grouped[key] = []
-            # adding the doc to the corresponding key in the grouped dict
+            # Adding the doc to the corresponding key in the grouped dict
             grouped[key].append(doc)
         
-        # return the grouped dictionary
+        # Return the grouped dictionary
         return grouped
 
     @classmethod
     def collection_name_to_class(cls: Type["VectorBaseDocument"], collection_name: str) -> type["VectorBaseDocument"]:
-        # looping through each subclass and checking to see if its in the collection
+        # Looping through each subclass and checking to see if its in the collection
         for subclass in cls.__subclasses__():
             try:
                 if subclass.get_collection_name() == collection_name:
                     return subclass
-                except ImproperlyConfigured:
-                    pass
+            except ImproperlyConfigured:
+                pass
                 
-                try:
-                    return subclass.collection_name_to_class(collection_name)
-                except ValueError:
-                    continue
-            raise ValueError(f"No subclass found for collection name: {collection_name}")
+            try:
+                return subclass.collection_name_to_class(collection_name)
+            except ValueError:
+                continue
+        raise ValueError(f"No subclass found for collection name: {collection_name}")
 
     @classmethod
     def _has_class_attribute(cls: Type[T], attribute_name: str) -> bool:
         """
         Returns whether or not a class has a given attribute.
         """
-        # if the class has the attribute_name in its annotations then return True
+        # If the class has the attribute_name in its annotations then return True
         if attribute_name in cls.__annotations__:
             return True
         
-        # checks each base class of the current class.
+        # Checks each base class of the current class.
         # If the base class has the `_has_class_attribute` method and that method returns True
         # for the given attribute_name, the class is considered present in the class hierarchy.
         for base in cls.__bases__:
             if hasattr(base, "_has_class_attribute") and base._has_class_attribute(attribute_name):
                 return True
         
-        # for all other cases return False
+        # For all other cases return False
         return False
-        
+
