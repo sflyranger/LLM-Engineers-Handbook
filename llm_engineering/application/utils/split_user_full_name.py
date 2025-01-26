@@ -1,7 +1,7 @@
 from llm_engineering.domain.exceptions import ImproperlyConfigured
 
 
-def split_user_full_name(user:str | None) -> tuple[str, str]: 
+def split_user_full_name(user: str | None) -> tuple[str, str]: 
     """ Takes the user full name and returns a tuple with the first name and the last name."""
     if user is None:
         raise ImproperlyConfigured("User name is empty.")

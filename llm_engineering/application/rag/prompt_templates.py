@@ -16,7 +16,7 @@ class QueryExpansionTemplate(PromptTemplateFactory):
     # Creating the seperator property.,
     @property
     def seperator(self) -> str:
-        return "#next-question"
+        return "#next-question#"
     
     # Create template function.
     def create_template(self, expand_to_n: int) -> PromptTemplate:
@@ -27,7 +27,7 @@ class QueryExpansionTemplate(PromptTemplateFactory):
             # Providing the following as partial vairbles to make them immutable at runtime.
             partial_variables={
                 "seperator": self.seperator, # providing a unique string to split the generated queries.
-                "expand_to_n": self.expand_to_n, # Defining how many queries to generate.
+                "expand_to_n": expand_to_n, # Defining how many queries to generate.
             },
         )
     

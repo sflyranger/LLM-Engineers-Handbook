@@ -70,7 +70,7 @@ class ContextRetriever:
         return k_documents
     
     # This step is crucial to limitiing the vector search space and keeping only the relevant documents for the query.
-    def search(self, query: Query, k: int = 3) -> list[EmbeddedChunk]:
+    def _search(self, query: Query, k: int = 3) -> list[EmbeddedChunk]:
         assert k >= 3, "k should be >= 3"
 
         def _search_data_category(
@@ -85,7 +85,7 @@ class ContextRetriever:
                             key='author_id', 
                             match=MatchValue(
                                 value=str(embedded_query.author_id),
-                            )
+                            ),
                         )
                     ]
                 )
@@ -96,7 +96,7 @@ class ContextRetriever:
                 query_vector=embedded_query.embedding, 
                 limit=k // 3,  # we divide by three here because we have repositories, articles and posts. 
                 # I may need to make this divided by 2 becuase I probably wont have any article documents.
-                query_filter=query_filter
+                query_filter=query_filter,
             )
         
         # Dispatch and grab the query

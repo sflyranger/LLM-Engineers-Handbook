@@ -27,7 +27,7 @@ class SelfQuery(RAGStep):
         chain = prompt | model 
 
         response = chain.invoke({"question": query})
-        user_full_name = response.content.strip("\n") # Strip the whitespaces
+        user_full_name = response.content.strip("\n ") # Strip the whitespaces
 
         # If theres not a user_full_name present return only the query without the user name.
         if user_full_name == "none":

@@ -54,7 +54,7 @@ class NoSQLBaseDocument(BaseModel, Generic[T], ABC):
         # setting the alias names from the fields
         by_alias = kwargs.pop("by_alias", True)
 
-        parsed = self.model_dump(exclude_unset = exclude_unset, by_alias = by_alias, **kwargs)
+        parsed = self.model_dump(exclude_unset=exclude_unset, by_alias=by_alias, **kwargs)
         
         # checking to see if the "_id" is in parsed, if it isn't and "id" is,
         # we set the "_id" to be equal to the str version of the removed "id"
@@ -106,13 +106,13 @@ class NoSQLBaseDocument(BaseModel, Generic[T], ABC):
 
             return new_instance # returning the new_instance
         except errors.OperationFailure: # error logging
-            logger.exception(f"Failed to retrieve document with filter options {filter_options}")
+            logger.exception(f"Failed to retrieve document with filter options: {filter_options}")
 
             raise
     
     @classmethod
     # function to insert multiple documents into the NoSQL mongodb
-    def bulk_insert(cls: Type[T], documents:list[T], **kwargs) -> bool:
+    def bulk_insert(cls: Type[T], documents: list[T], **kwargs) -> bool:
         collection = _database[cls.get_collection_name()] # pulling the collection form the class or subclass
         try:
             collection.insert_many(doc.to_mongo(**kwargs) for doc in documents)
@@ -139,7 +139,7 @@ class NoSQLBaseDocument(BaseModel, Generic[T], ABC):
     
     @classmethod 
     # method to find documents of one type in bulk
-    def bulk_find(cls:Type[T], **filter_options)-> list[T]:
+    def bulk_find(cls: Type[T], **filter_options)-> list[T]:
         collection = _database[cls.get_collection_name()]
         try:
             instances = collection.find(filter_options)
