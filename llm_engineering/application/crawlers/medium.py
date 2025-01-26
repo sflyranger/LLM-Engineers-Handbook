@@ -12,7 +12,7 @@ class MediumCrawler(BaseSeleniumCrawler):
     def set_extra_driver_options(self, options)-> None:
         options.add_argument(r"--profile-directory=Profile 2")
     
-    def extract(self, link:str, **kwargs) -> None:
+    def extract(self, link: str, **kwargs) -> None:
         old_model = self.model.find(link=link)
         if old_model is not None:
             logger.info(f"Article already exists in the database: {link}")

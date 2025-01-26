@@ -16,7 +16,7 @@ from .base import BaseSeleniumCrawler
 class LinkedInCrawler(BaseSeleniumCrawler):
     model = PostDocument # setting the model attribute to be a PostDocument
 
-    def __init__(self, scroll_limit: int = 5, is_deprecated:bool=True) -> None:
+    def __init__(self, scroll_limit: int = 5, is_deprecated: bool = True) -> None:
         super().__init__(scroll_limit) # inheriting the class settings while storing the scroll_limit
 
         self._is_deprecated = is_deprecated # setting the _is_deprecated attribute to be True
@@ -59,7 +59,7 @@ class LinkedInCrawler(BaseSeleniumCrawler):
 
                 return
         
-        logger.info(f"Starting scrapping of post: {link}")
+        logger.info(f"Starting scrapping data for profile: {link}")
 
         # initiate login function
         self.login()
@@ -70,7 +70,7 @@ class LinkedInCrawler(BaseSeleniumCrawler):
         data = {
             "Name": self._scrape_section(soup, "h1", class_="text-heading-xlarge"), 
             "About": self._scrape_section(soup, "div", class_="display-flex ph5 pv3"), 
-            "Main Page": self._scrape_section(soup, "div", {"id":"main-content"}), 
+            "Main Page": self._scrape_section(soup, "div", {"id": "main-content"}), 
             "Experience": self._scrape_experience(link), 
             "Education": self._scrape_education(link)
         }
@@ -141,14 +141,16 @@ class LinkedInCrawler(BaseSeleniumCrawler):
         # looping through each index, button pair in the buttons
         for i, button in enumerate(buttons):
             img_tag = button.find("img")
-            # if the tag and the "src" is in img_tag attributes output a log that the image is not found
+            # if the tag and the "src" is in img_tag attributes get the image for the post. Else, output an error that the image is not found.
             if img_tag and "src" in img_tag.attrs:
+                post_images[f"Post_{i}"] = img_tag["src"]
+            else:
                 logger.warning("No image found in this button.")
-            return post_images
+        return post_images
 
 
     # function to get page content through the url and transform to BeautifulSoup Object    
-    def _get_page_content(self, url:str) -> BeautifulSoup:
+    def _get_page_content(self, url: str) -> BeautifulSoup:
         """ Retrieve page content for a given URL."""
 
         # Navigate to the url
@@ -157,7 +159,7 @@ class LinkedInCrawler(BaseSeleniumCrawler):
 
         return BeautifulSoup(self.driver.page_source, "html_parser")
     
-    def _extract_posts(self, post_elements:List[Tag], post_images: Dict[str, str]) -> Dict[str,Dict[str, str]]:
+    def _extract_posts(self, post_elements: List[Tag], post_images: Dict[str, str]) -> Dict[str, Dict[str, str]]:
         """
         Extracts post texts and combines them with their respective images.
 

@@ -17,7 +17,7 @@ from llm_engineering.domain.types import DataCategory
 from llm_engineering.settings import settings 
 
 from . import constants
-from . import utils
+from . import utils as generation_utils
 from .output_parsers import ListPydanticOutputParser
 
 # Base class to generate datasets, inherits from the abstract base class.
@@ -26,7 +26,7 @@ class DatasetGenerator(ABC):
     dataset_type = DatasetType | None = None
 
     system_prompt_template = """You are a helpful assistant who generates {dataset_format} based on the given context. \
-        Provide your response in JSON format.
+Provide your response in JSON format.
         """
     prompt_template_str: str | None = None
 
@@ -57,7 +57,7 @@ class DatasetGenerator(ABC):
     @classmethod 
     def get_prompts(cls, documents: list[CleanedDocument]) -> dict[DataCategory, list[GenerateDatasetSamplesPrompt]]:
         # Extract the substrings.
-        documents = utils.extract_substrings(documents)
+        documents = generation_utils.extract_substrings(documents)
 
         # Empty dictionary for stored prompts
         grouped_prompts = {}
@@ -122,7 +122,7 @@ class DatasetGenerator(ABC):
 
         # Internal function to push samples into langchain to get the system and human messages.
         def _to_langchain(
-                prompt: GenerateDatasetSamplesPrompt
+            prompt: GenerateDatasetSamplesPrompt
         )-> list[BaseMessage]:
             messages = [
                 SystemMessage(content=cls.get_system_prompt().content),
@@ -178,9 +178,9 @@ class DatasetGenerator(ABC):
             logger.info(f"Generated {len(dataset.samples)} samples for category '{category}'.")
 
             # Storing the processed datasets post split.
-            processed_datasets = cls.post_process_datasets(datasets, test_size=test_size)
+        processed_datasets = cls.post_process_datasets(datasets, test_size=test_size)
 
-            return processed_datasets
+        return processed_datasets
 
     # Internal method to get the sample type (Instruction of Preference).    
     @classmethod
@@ -212,7 +212,7 @@ context. Only use concepts from the context to generate the instructions. \
 Instructions must never explicitly mention a context, a system, a course, or an extract. \
 Instructions must be self-contained and general. \
 Answers must imitate the writing style of the context. \
-
+    
 Example instruction: Explain the concept of an LLM Twin. \
 Example answer: An LLM Twin is essentially an AI character that mimics your writing style, personality, and voice. \
 It's designed to write just like you by incorporating these elements into a language model. \
@@ -221,7 +221,7 @@ The idea is to create a digital replica of your writing habits using advanced AI
 Structure the answer in JSON format, ready to be loaded in Python by json.loads(), as a list of objects.
 Do not add any extra characters and provide your response in JSON format with the following structure:
 [
-    {"instruction": "...", "answer": "..."}, 
+    {"instruction": "...", "answer": "..."},
     ...
 ]
 
@@ -230,9 +230,10 @@ Extract:
 """
 
     @classmethod
-    def post_process_datasets(cls, datasets: dict[DataCategory, domain.dataset.InstructDataset], test_size: float
-    )->TrainTestSplit:
-        train_test_split = utils.create_instruct_train_test_split(
+    def post_process_datasets(
+        cls, datasets: dict[DataCategory, domain.dataset.InstructDataset], test_size: float
+    ) -> TrainTestSplit:
+        train_test_split = generation_utils.create_instruct_train_test_split(
             datasets, test_size=test_size, random_state=42
         )
 
@@ -251,15 +252,15 @@ Instructions must be self-contained and general, without explicitly mentioning a
 
 Important:
 - Ensure that the extracted answer, the chosen one, is a verbatim copy from the context, including all punctuation and apostrophes.
-- Do not add any ellipsis (...) or [...] to indicate skipped text in the extracted answer.
+- Do not add any ellipsis (...) or [...]  to indicate skipped text in the extracted answer.
 - If the relevant text is not continuous, use two separate sentences from the context instead of skipping text.
 
 Structure the answer in JSON format, ready to be loaded in Python by json.loads(), as a list of objects.
 Do not add any extra characters and provide your response in JSON format with the following structure:
 [
     {
-        "instruction": "...", 
-        "rejected": "...", 
+        "instruction": "...",
+        "rejected": "...",
         "chosen": "..."
     },
     ...
@@ -270,7 +271,8 @@ Extract:
 """
 
     @classmethod
-    def post_process_datasets(cls, datasets: dict[DataCategory, domain.dataset.PreferenceDataset], test_size: float,
+    def post_process_datasets(
+        cls, datasets: dict[DataCategory, domain.dataset.PreferenceDataset], test_size: float
     )-> TrainTestSplit:
         # Filter based on length.
         datasets = utils.filter_short_answers(datasets)

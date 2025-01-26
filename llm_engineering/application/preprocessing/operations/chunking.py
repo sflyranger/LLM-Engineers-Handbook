@@ -52,42 +52,42 @@ def chunk_text(text: str, chunk_size: int = 500, chunk_overlap: int = 50) -> lis
     return chunks_by_tokens
 
     
-    def chunk_document(text: str, min_length: int, max_length: int)-> list[str]:
-        """ Alias for chunk_article()."""
+def chunk_document(text: str, min_length: int, max_length: int)-> list[str]:
+    """ Alias for chunk_article()."""
 
-        return chunk_article(text, min_length, max_length)
+    return chunk_article(text, min_length, max_length)
 
 
-    def chunk_article(text:str, min_length: int, max_length: int) -> list[str]:
-        # regex split that handles abbreviations and initials within sentences over the text.
-        sentences = re.split(r"(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?|\!)\s", text)
+def chunk_article(text:str, min_length: int, max_length: int) -> list[str]:
+    # regex split that handles abbreviations and initials within sentences over the text.
+    sentences = re.split(r"(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?|\!)\s", text)
 
-        # empty list for extracted chunks
-        extracts = []
+    # empty list for extracted chunks
+    extracts = []
 
-        # Initialize a temporary variable to accumulate sentences for the current chunk.
-        current_chunk = ""
+    # Initialize a temporary variable to accumulate sentences for the current chunk.
+    current_chunk = ""
         
-        # Iterate over each sentence to group them into chunks based on the specified length constraints.
-        for sentence in sentences:
-            sentence = sentence.strip()
-            if not sentence:
-                continue
+    # Iterate over each sentence to group them into chunks based on the specified length constraints.
+    for sentence in sentences:
+        sentence = sentence.strip()
+        if not sentence:
+            continue
             
-            # if the current chunk plus the next sentence is less than the max length then add the sentence and white space
-            if len(current_chunk) + len(sentence) <= max_length:
-                current_chunk += sentence + " "
+        # if the current chunk plus the next sentence is less than the max length then add the sentence and white space
+        if len(current_chunk) + len(sentence) <= max_length:
+            current_chunk += sentence + " "
             
-            else:
-                # If the current chunk meets the minimum length, append it to the results list. 
-                if len(current_chunk) >= min_length:
-                    extracts.append(current_chunk.strip())
-                # Start a new chunk with the current sentence.
-                current_chunk = sentence + " "
+        else:
+            # If the current chunk meets the minimum length, append it to the results list. 
+            if len(current_chunk) >= min_length:
+                extracts.append(current_chunk.strip())
+            # Start a new chunk with the current sentence.
+            current_chunk = sentence + " "
 
-        # If long enough append the chunk to the extract list    
-        if len(current_chunk) >= min_length:
-            extracts.append(current_chunk.strip())
+    # If long enough append the chunk to the extract list    
+    if len(current_chunk) >= min_length:
+        extracts.append(current_chunk.strip())
         
-        # return the list of chunks for the article
-        return extracts
+    # return the list of chunks for the article
+    return extracts

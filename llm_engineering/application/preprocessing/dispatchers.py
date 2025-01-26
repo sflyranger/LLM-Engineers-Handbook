@@ -75,9 +75,9 @@ class ChunkingHandlerFactory:
     def create_handler(data_category: DataCategory) -> ChunkingDataHandler:
         if data_category == DataCategory.POSTS:
             return PostChunkingHandler()
-        elif data_category==DataCategory.ARTICLES:
+        elif data_category == DataCategory.ARTICLES:
             return ArticleChunkingHandler()
-        elif data_category==DataCategory.REPOSITORIES:
+        elif data_category == DataCategory.REPOSITORIES:
             return RepositoryChunkingHandler()
         else:
             raise ValueError("Unsupported data type.")
@@ -108,13 +108,13 @@ class ChunkingDispatcher:
 class EmbeddingHandlerFactory:
     @staticmethod
     def create_handler(data_category: DataCategory) -> EmbeddingDataHandler:
-        if data_category==DataCategory.QUERIES:
+        if data_category == DataCategory.QUERIES:
             return QueryEmbeddingHandler()
-        elif data_category==DataCategory.POSTS:
+        elif data_category == DataCategory.POSTS:
             return PostEmbeddingHandler()
-        elif data_category==DataCategory.ARTICLES:
+        elif data_category == DataCategory.ARTICLES:
             return ArticleEmbeddingHandler()
-        elif data_category==DataCategory.REPOSITORIES:
+        elif data_category == DataCategory.REPOSITORIES:
             return RepositoryEmbeddingHandler()
         else:
             raise ValueError("Unsupported data type.")
@@ -140,7 +140,7 @@ class EmbeddingDispatcher:
         data_category = data_model[0].get_category()
         assert all(
             data_model.get_category() == data_category for data_model in data_model # Ensure all models are of the same category.
-        ), "Data models must be of the same category.", 
+        ), "Data models must be of the same category." 
         handler = cls.factory.create_handler(data_category) # Creating the handler for the given data category.
 
         embedded_chunk_model = handler.embed_batch(data_model) # Getting the embedded chunks for the data model.

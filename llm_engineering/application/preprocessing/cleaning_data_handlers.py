@@ -34,16 +34,15 @@ class CleaningDataHandler(ABC, Generic[DocumentT, CleanedDocumentT]):
 
 class PostCleaningHandler(CleaningDataHandler):
     def clean(self, data_model: PostDocument) -> CleanedPostDocument:
-
         return CleanedPostDocument(
-            id = data_model.id, 
-            content = clean_text(" #### ".join(data_model.content.values())), # sets clear delimiter with the " #### " before the content.
-            platform=data_model.platform, 
-            link=data_model.link, 
-            author_id=data_model.author_id, 
+            id=data_model.id,
+            content=clean_text(" #### ".join(data_model.content.values())), # sets clear delimiter with the " #### " before the content.
+            platform=data_model.platform,
+            author_id=data_model.author_id,
             author_full_name=data_model.author_full_name,
-            image=data_model.image if data_model.image else None
+            image=data_model.image if data_model.image else None,
         )
+
 
 
 class ArticleCleaningHandler(CleaningDataHandler):
@@ -51,24 +50,22 @@ class ArticleCleaningHandler(CleaningDataHandler):
         valid_content = [content for content in data_model.content.values() if content]
 
         return CleanedArticleDocument(
-            id=data_model.id, 
+            id=data_model.id,
             content=clean_text(" #### ".join(valid_content)),
-            platform=data_model.platform, 
-            link=data_model.link, 
-            author_id=data_model.author_id, 
-            author_full_name=data_model.author_full_name, 
-
+            platform=data_model.platform,
+            link=data_model.link,
+            author_id=data_model.author_id,
+            author_full_name=data_model.author_full_name,
         )
 
 class RepositoryCleaningHandler(CleaningDataHandler):
     def clean(self, data_model: RepositoryDocument) -> CleanedRepositoryDocument:
         return CleanedRepositoryDocument(
-            id=data_model.id, 
-            content=clean_text(" #### ".join(data_model.content.values())), 
-            platform=data_model.platform, 
-            link=data_model.link, 
+            id=data_model.id,
+            content=clean_text(" #### ".join(data_model.content.values())),
+            platform=data_model.platform,
             name=data_model.name,
-            author_id=data_model.author_id, 
-            author_full_name=data_model.author_full_name, 
-
+            link=data_model.link,
+            author_id=data_model.author_id,
+            author_full_name=data_model.author_full_name,
         )

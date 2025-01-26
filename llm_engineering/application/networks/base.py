@@ -37,7 +37,7 @@ class SingletonMeta(type):
             # lock block, a thread that might have been waiting for the lock
             # release may then enter this section. But since the Singelton field
             # is already initialized, the thread wont create a new object.
-            if cls not in cle._instances:
+            if cls not in cls._instances:
                 instance = super().__call__(*args, **kwargs)
                 cls._instances[cls] = instance
             

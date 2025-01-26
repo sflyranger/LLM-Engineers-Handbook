@@ -67,7 +67,8 @@ class EmbeddingModelSingleton(metaclass=SingletonMeta):
         Returns:
             int: Maximum input length of text to tokenize.
         """
-
+        return self._model.max_seq_length
+    
     @property
     def tokenizer(self) -> AutoTokenizer:
         """
@@ -129,7 +130,7 @@ class CrossEncoderModelSingleton(metaclass=SingletonMeta):
         Generates the scores of pairs of input text in union format.
         """
 
-        scores = self._model_id.predict(pairs)
+        scores = self._model.predict(pairs)
 
         if to_list:
             scores = scores.tolist()

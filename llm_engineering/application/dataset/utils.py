@@ -39,16 +39,19 @@ def create_instruct_train_test_split(
             train_samples = []
             test_samples = []
 
-            train_samples = InstructDataset(category=category, samples=train_samples)
-            test_samples = InstructDataset(category=category, samples=test_samples)
+        train_dataset = InstructDataset(category=category, samples=train_samples)
+        test_dataset = InstructDataset(category=category, samples=test_samples)
+        
+        train_data[category] = train_dataset
+        test_data[category] = test_dataset
+
 
     # Store in huggingface after split    
     return InstructTrainTestSplit(train=train_data, test=test_data, test_split_size=test_size)
 
 
 def create_preference_train_test_split(
-    data: dict[DataCategory, PreferenceDataset], test_size=0.2, 
-random_state=42
+    data: dict[DataCategory, PreferenceDataset], test_size=0.2, random_state=42
 ) -> PreferenceTrainTestSplit:
     # Initialize empty dictionaries for the train and test data.
     train_data = {}
@@ -73,8 +76,11 @@ random_state=42
             train_samples = []
             test_samples = []
 
-        train_data[category] = PreferenceDataset(category=category, samples=train_samples)
-        test_data[category] = PreferenceDataset(category=category, samples=test_samples)
+        train_dataset = PreferenceDataset(category=category, samples=train_samples)
+        test_dataset = PreferenceDataset(category=category, samples=test_samples)
+
+        train_data[category] = train_dataset
+        test_data[category] = test_dataset
 
     # Store in huggingface after split    
     return PreferenceTrainTestSplit(train=train_data, test=test_data, test_split_size=test_size)
