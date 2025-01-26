@@ -1,6 +1,6 @@
 settings:
   docker:
-    parent_image: 992382797823.dkr.ecr.eu-central-1.amazonaws.com/zenml-rlwlcs:latest
+    parent_image: 009717615422.dkr.ecr.us-east-1.amazonaws.com/zenml-jggvwy:latest
     skip_build: True
   orchestrator.sagemaker:
     synchronous: false
