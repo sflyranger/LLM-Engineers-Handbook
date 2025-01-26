@@ -5,7 +5,7 @@ from langchain_core.exceptions import OutputParserException
 from langchain_core.language_models.fake import FakeListLLM 
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 from langchain_core.prompts import PromptTemplate
-from langchain_core.openai import ChatOpenAI
+from langchain_openai import ChatOpenAI
 from loguru import logger 
 
 from llm_engineering import domain
@@ -23,7 +23,7 @@ from .output_parsers import ListPydanticOutputParser
 # Base class to generate datasets, inherits from the abstract base class.
 class DatasetGenerator(ABC):
     tokenizer = tiktoken.encoding_for_model(settings.OPENAI_MODEL_ID)
-    dataset_type = DatasetType | None = None
+    dataset_type: DatasetType | None = None
 
     system_prompt_template = """You are a helpful assistant who generates {dataset_format} based on the given context. \
 Provide your response in JSON format.

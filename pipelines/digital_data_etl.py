@@ -1,6 +1,6 @@
 from steps.etl import crawl_links, get_or_create_user
 
-from zemnl import pipeline
+from zenml import pipeline
 
 
 # first pipeline step that gets and creates the user and crawls the designated links in the user configuration file

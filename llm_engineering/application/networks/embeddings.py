@@ -21,12 +21,12 @@ class EmbeddingModelSingleton(metaclass=SingletonMeta):
 
     def __init__(
         self, 
-        model_id: str = settings.TEXT_EMBEDDING_MODEL,
+        model_id: str = settings.TEXT_EMBEDDING_MODEL_ID,
         device: str = settings.RAG_MODEL_DEVICE,
         cache_dir: Optional[Path] = None,
     ) -> None:
-        self._model_id = model_id, 
-        self._device = device, 
+        self._model_id = model_id 
+        self._device = device 
         self._model = SentenceTransformer(
             self._model_id, 
             device = self._device, 
