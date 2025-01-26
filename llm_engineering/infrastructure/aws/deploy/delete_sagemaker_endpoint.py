@@ -69,4 +69,4 @@ def delete_endpoint_and_config(endpoint_name)-> None:
 if __name__ == "__main__":
     endpoint_name = settings.SAGEMAKER_ENDPOINT_INFERENCE
     logger.info(f"Attempting to delete endpoint: {endpoint_name}")
-    delete_endpoint_and_config(endpoint_name=endpoint_nam
+    delete_endpoint_and_config(endpoint_name=endpoint_name)
