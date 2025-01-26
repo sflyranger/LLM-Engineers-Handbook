@@ -11,7 +11,7 @@ class MongoDatabaseConnector:
     def __new__(cls, *args, **kwargs) -> MongoClient:
         if cls._instance is None:
             try:
-                cle._instance = MongoClient(settings.DATABASE_HOST)
+                cls._instance = MongoClient(settings.DATABASE_HOST)
             except ConnectionFailure as e:
                 logger.error(f"Couldn't connect to the database: {e!s}")
 

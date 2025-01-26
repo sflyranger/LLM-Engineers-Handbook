@@ -14,7 +14,7 @@ class JsonFileManager:
             with file_path.open("r") as file:
                 return json.load(file)
         except FileNotFoundError:
-            raise FileNotFoundError(f"File '{file_path}' does not exist.") from None
+            raise FileNotFoundError(f"File '{file_path=}' does not exist.") from None
         except json.JSONDecodeError as e:
             raise json.JSONDecodeError(
                 msg=f"File '{file_path}' is not properly formatted as JSON.",

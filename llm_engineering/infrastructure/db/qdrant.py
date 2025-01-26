@@ -30,7 +30,7 @@ class QdrantDatabaseConnector:
 
                     uri = f"{settings.QDRANT_DATABASE_HOST}:{settings.QDRANT_DATABASE_PORT}"
 
-                logger.info(f"Connection to Qdrant DB with uri successful: {uri}")
+                logger.info(f"Connection to Qdrant DB with URI successful: {uri}")
             except UnexpectedResponse:
                 logger.exception(
                     "Couldn't connect to Qdrant.",

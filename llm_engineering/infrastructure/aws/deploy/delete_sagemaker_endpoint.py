@@ -32,7 +32,7 @@ def delete_endpoint_and_config(endpoint_name)-> None:
     # Get the endpoint configuration name.
     try:
         response = sagemaker_client.describe_endpoint(EndpointName=endpoint_name)
-        config_name=response["EndpointConfigName"]
+        config_name = response["EndpointConfigName"]
     except ClientError:
         logger.error("Error getting the endpoint configuration and modelname.")
 

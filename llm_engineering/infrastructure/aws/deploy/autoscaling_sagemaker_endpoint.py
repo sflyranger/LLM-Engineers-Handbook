@@ -50,7 +50,7 @@ class IAutoScalingClient:
         raise NotImplementedError
     
 class ScalingPolicyStrategy:
-    def apply_policy(self)
+    def apply_policy(self):
         raise NotImplementedError
     
 
@@ -121,13 +121,13 @@ class ScalableTarget:
 
 class AutoscalingSagemakerEndpoint:
     def __init__(
-            self, 
-            auto_scaling_client: IAutoScalingClient,
-            inference_component_name: str, 
-            endpoint_name: str, 
-            initial_copy_count: int = 1,
-            max_copy_count: int = 6, 
-            target_value: float = 4.0,
+        self,
+        auto_scaling_client: IAutoScalingClient,
+        inference_component_name: str,
+        endpoint_name: str,
+        initial_copy_count: int = 1,
+        max_copy_count: int = 6,
+        target_value: float = 4.0,
     ):
         self.auto_scaling_client = auto_scaling_client
         self.inference_component_name = inference_component_name
@@ -140,29 +140,28 @@ class AutoscalingSagemakerEndpoint:
         self.resource_id = f"inference-component/{self.inference_component_name}"
 
     def setup_autoscaling(self):
-        # Register to scalable target
+        # Register scalable target
         scalable_target = ScalableTarget(
-            auto_scaling_client=self.auto_scaling_client, 
-            service_namespace=self.service_namespace, 
-            resource_id=self.resource_id, 
-            scalable_dimension=self.scalable_dimension, 
-            min_capacity=self.initial_copy_count, 
+            auto_scaling_client=self.auto_scaling_client,
+            service_namespace=self.service_namespace,
+            resource_id=self.resource_id,
+            scalable_dimension=self.scalable_dimension,
+            min_capacity=self.initial_copy_count,
             max_capacity=self.max_copy_count,
         )
         scalable_target.register()
 
-        # Add the scaling policy.
+        # Add scaling policy
         policy = TargetTrackingScalingPolicy(
             auto_scaling_client=self.auto_scaling_client,
-            policy_name=self.policy_name, 
-            service_namespace=self.service_namespace, 
-            resource_id=self.resource_id, 
-            scalable_dimension=self.scalable_dimension, 
-            target_value=self.target_value + 1 # This is an example adjustment, should be based on the specific use case.
-            scale_in_cooldown=200, 
+            policy_name=self.endpoint_name,
+            service_namespace=self.service_namespace,
+            resource_id=self.resource_id,
+            scalable_dimension=self.scalable_dimension,
+            target_value=self.target_value + 1,  # Example adjustment, should be based on specific use case
+            scale_in_cooldown=200,
             scale_out_cooldown=200,
         )
-
         policy.apply_policy()
     
     def cleanup_autoscaling(self):
